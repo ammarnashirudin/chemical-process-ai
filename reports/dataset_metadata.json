@@ -1,0 +1,18 @@
+{
+  "dataset": "methane_pr_eos.csv",
+  "fluid": "Methane",
+  "rows": 750,
+  "temperature_unit": "K",
+  "pressure_unit": "Pa",
+  "target": "Z_vapor_root",
+  "target_definition": "Largest admissible real root of the peng-robinsoncubic EOS; not an experimental measurement.",
+  "data_source": "calculated using project PR-EOS implementation",
+  "temperature_range_K": [
+    220.0,
+    400.0
+  ],
+  "pressure_range_Pa": [
+    100000.0,
+    8000000.0
+  ]
+}
