@@ -1,0 +1,29 @@
+[
+  {
+    "held_out_temperature_K": 250.0,
+    "train_rows": 720,
+    "test_rows": 30,
+    "mae": 0.019954454747837993,
+    "rmse": 0.022864530383346026,
+    "r2": 0.9275699052031223,
+    "test_temperature_seen_during_training": false
+  },
+  {
+    "held_out_temperature_K": 310.0,
+    "train_rows": 720,
+    "test_rows": 30,
+    "mae": 0.007403380852844025,
+    "rmse": 0.008465340916255504,
+    "r2": 0.9488512810029806,
+    "test_temperature_seen_during_training": false
+  },
+  {
+    "held_out_temperature_K": 370.0,
+    "train_rows": 720,
+    "test_rows": 30,
+    "mae": 0.0035664840579124743,
+    "rmse": 0.004021060960271178,
+    "r2": 0.9491152357506073,
+    "test_temperature_seen_during_training": false
+  }
+]

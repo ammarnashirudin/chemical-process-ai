@@ -1,0 +1,43 @@
+{
+  "target": "Z_vapor_root",
+  "features": [
+    "temperature_K",
+    "pressure_Pa"
+  ],
+  "dataset_rows": 750,
+  "train_rows": 450,
+  "validation_rows": 150,
+  "test_rows": 150,
+  "random_state": 42,
+  "split_method": "random 60/20/20 train_validation_test split",
+  "selection_metric": "validation_rmse",
+  "best_model": "random_forest_tuned",
+  "validation_results": {
+    "linear_regression": {
+      "mae": 0.030505967419204107,
+      "rmse": 0.047185498687039654,
+      "r2": 0.7584016659919379
+    },
+    "random_forest_tuned": {
+      "mae": 0.0033429240162665117,
+      "rmse": 0.007533405359433252,
+      "r2": 0.9938417188832497
+    },
+    "random_forest": {
+      "mae": 0.004485731286734671,
+      "rmse": 0.009713104393116597,
+      "r2": 0.9897625227568423
+    },
+    "gradient_boosting": {
+      "mae": 0.006503182969232723,
+      "rmse": 0.010044249592106284,
+      "r2": 0.9890525787775112
+    }
+  },
+  "final_test_results": {
+    "mae": 0.0027668297806157345,
+    "rmse": 0.0046836997398462974,
+    "r2": 0.9971018690280576
+  },
+  "interpretation": "Metrics measure approximation of PR-EOS-generated labels, not accuracy against experimental measurements. Models were selected using validation RMSE. The test set was held out for final evaluation."
+}

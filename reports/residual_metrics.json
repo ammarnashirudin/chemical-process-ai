@@ -1,0 +1,9 @@
+{
+  "test_rows": 150,
+  "mean_residual": 1.770673442499519e-05,
+  "mean_absolute_residual": 0.002766829780615722,
+  "residual_std": 0.0046836662695576665,
+  "fraction_overpredicted": 0.41333333333333333,
+  "fraction_underpredicted": 0.5866666666666667,
+  "note": "Residual = actual PR-EOS Z minus predicted Z.these residuals measure ML approximation of PR-EOS labels,not experimental error"
+}
