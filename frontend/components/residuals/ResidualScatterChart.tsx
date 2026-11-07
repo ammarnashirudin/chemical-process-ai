@@ -20,6 +20,9 @@ type ResidualScatterChartProps = {
   xLabel: string;
   data: ResidualPoint[];
   onPointClick?: (point: ResidualPoint) => void;
+  fill?: string;
+  pointName?: string;
+  pointSize?: number;
 };
 
 export function ResidualScatterChart({
@@ -30,11 +33,14 @@ export function ResidualScatterChart({
   xLabel,
   data,
   onPointClick,
+  fill = "#22d3ee",
+  pointName = "Test residuals",
+  pointSize = 45,
 }: ResidualScatterChartProps) {
   const isPressure = xDataKey === "pressure_Pa";
 
   return (
-    <div className="rounded-xl border border-slate-700bg-slate-900 p-5">
+    <div className="rounded-xl border border-slate-700 bg-slate-900 p-5">
       <h3 className="text-lg font-semibold text-white">{title}</h3>
 
       <p className="mt-1 text-sm text-slate-400">{description}</p>
@@ -77,7 +83,7 @@ export function ResidualScatterChart({
               }}
             />
 
-            <ZAxis range={[45, 45]} />
+            <ZAxis range={[pointSize, pointSize]} />
 
             <Tooltip
               cursor={{ strokeDasharray: "3 3" }}
@@ -101,10 +107,10 @@ export function ResidualScatterChart({
             />
 
             <Scatter
-              name="Test residuals"
+              name={pointName}
               data={data}
-              fill="#22d3ee"
-              fillOpacity={0.75}
+              fill={fill}
+              fillOpacity={0.85}
               cursor={onPointClick ? "pointer" : undefined}
               onClick={
                 onPointClick
