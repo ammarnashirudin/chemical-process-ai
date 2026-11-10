@@ -1,4 +1,6 @@
 ﻿import { MetricCard } from "../common/MetricCard";
+import { formatResidualDetails } from "./utils/residualFormatters";
+
 import type { ResidualPoint } from "../../types/dashboard";
 
 type SelectedResidualDetailsProps = {
@@ -13,6 +15,8 @@ export function SelectedResidualDetails({
   if (!selectedResidual) {
     return null;
   }
+
+  const details = formatResidualDetails(selectedResidual);
 
   return (
     <div className="rounded-xl border border-cyan-500/30 bg-slate-900 p-5 space-y-4">
@@ -32,49 +36,43 @@ export function SelectedResidualDetails({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <MetricCard
           label="Temperature"
-          value={`${selectedResidual.temperature_K.toFixed(2)}K`}
+          value={details.temperature}
           detail="Operating temperature"
         />
 
         <MetricCard
           label="Pressure"
-          value={`${(selectedResidual.pressure_Pa / 1_000_000).toFixed(3)}MPa`}
+          value={details.pressure}
           detail="Operating pressure"
         />
 
         <MetricCard
           label="Actual Z"
-          value={selectedResidual.z_actual.toFixed(6)}
+          value={details.actualZ}
           detail="PR-EOS reference"
         />
 
         <MetricCard
           label="Predicted Z"
-          value={selectedResidual.z_predicted.toFixed(6)}
+          value={details.predictedZ}
           detail="Random Forest Tuned"
         />
 
         <MetricCard
           label="Residual"
-          value={selectedResidual.residual.toFixed(6)}
+          value={details.residual}
           detail="Actual Z - Predicted Z"
         />
 
         <MetricCard
           label="Absolute Error"
-          value={selectedResidual.absolute_error.toFixed(6)}
+          value={details.absoluteError}
           detail="Error magnitude"
         />
 
         <MetricCard
           label="Prediction Error Type"
-          value={
-            selectedResidual.residual < 0
-              ? "Overprediction"
-              : selectedResidual.residual > 0
-                ? "Underprediction"
-                : "Exact Prediction"
-          }
+          value={details.predictionErrorType}
           detail="Based on residual sign"
         />
       </div>
