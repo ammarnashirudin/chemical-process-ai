@@ -1,4 +1,6 @@
-import { MetricCard } from "../common/MetricCard";
+﻿import { MetricCard } from "../common/MetricCard";
+import { ResidualPredictionFractions } from "./ResidualPredictionFractions";
+
 import type { EvaluationResult } from "../../types/dashboard";
 
 type ResidualAnalysisSummaryProps = {
@@ -9,7 +11,7 @@ export function ResidualAnalysisSummary({
   evaluation,
 }: ResidualAnalysisSummaryProps) {
   return (
-    <section className="rounded-2xl border border-slate-700 bg-slate-800/60 p-6 space-y-5">
+    <section className="space-y-5 rounded-2xl border border-slate-700 bg-slate-800/60 p-6">
       <div>
         <h2 className="text-xl font-bold text-white">
           Residual Analysis
@@ -37,57 +39,30 @@ export function ResidualAnalysisSummary({
             <MetricCard
               label="Residual Standard Deviation"
               value={evaluation.residual_metrics.residual_std.toFixed(6)}
-              detail="residual distribution"
+              detail="Residual distribution"
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="rounded-xl bg-slate-900 p-4">
-              <p className="text-sm text-slate-400">
-                Fraction Overpredicted
-              </p>
-              <p className="mt-2 text-2xl font-bold text-cyan-400">
-                {(evaluation.residual_metrics.fraction_overpredicted * 100).toFixed(1)}%
-              </p>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-700">
-                <div
-                  className="h-full rounded-full bg-cyan-400"
-                  style={{
-                    width: `${evaluation.residual_metrics.fraction_overpredicted * 100}%`,
-                  }}
-                />
-              </div>
+          <ResidualPredictionFractions
+            fractionOverpredicted={
+              evaluation.residual_metrics.fraction_overpredicted
+            }
+            fractionUnderpredicted={
+              evaluation.residual_metrics.fraction_underpredicted
+            }
+          />
 
-              <div className="rounded-xl bg-slate-900 p-4">
-                <p className="text-sm text-slate-400">
-                  Fraction Underpredicted
-                </p>
-                <p className="mt-2 text-2xl font-bold text-violet-400">
-                  {(evaluation.residual_metrics.fraction_underpredicted * 100).toFixed(1)}%
-                </p>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-700">
-                  <div
-                    className="h-full rounded-full bg-violet-400"
-                    style={{
-                      width: `${evaluation.residual_metrics.fraction_underpredicted * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
-              <p className="font-semibold text-white">
-                Interpretation
-              </p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                The residual is defined as the Z-value from the PR-EOS minus the Z-value
-                predicted by machine learning. A mean residual close to zero indicates that
-                the signed residuals are, on average, relatively small. The mean absolute
-                residual represents the magnitude of the error regardless of direction,
-                while the residual standard deviation describes its dispersion.
-              </p>
-            </div>
+          <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+            <p className="font-semibold text-white">
+              Interpretation
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-300">
+              The residual is defined as the Z-value from the PR-EOS minus the Z-value
+              predicted by machine learning. A mean residual close to zero indicates that
+              the signed residuals are, on average, relatively small. The mean absolute
+              residual represents the magnitude of the error regardless of direction,
+              while the residual standard deviation describes its dispersion.
+            </p>
           </div>
         </>
       ) : (
