@@ -1,13 +1,4 @@
-﻿type ResidualStats = {
-  count: number;
-  meanResidual: number;
-  mae: number;
-  standardDeviation: number;
-  overPrediction: number;
-  underPrediction: number;
-  overPredictionPercent: number;
-  underPredictionPercent: number;
-};
+import type { ResidualStats } from "../../types/dashboard";
 
 type ResidualPlotStatsProps = {
   residualStats: ResidualStats;

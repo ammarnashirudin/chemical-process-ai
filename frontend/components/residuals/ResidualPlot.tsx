@@ -1,4 +1,4 @@
-﻿import { ResidualPlotStats } from "./ResidualPlotStats";
+import { ResidualPlotStats } from "./ResidualPlotStats";
 import { ResidualScatterCharts } from "./ResidualScatterCharts";
 import { SelectedResidualDetails } from "./SelectedResidualDetails";
 import { ResidualDistribution } from "./ResidualDistribution";
@@ -6,18 +6,8 @@ import type {
   ResidualPoint,
   ResidualResponse,
   ResidualHistogramPoint,
+  ResidualStats,
 } from "../../types/dashboard";
-
-type ResidualStats = {
-  count: number;
-  meanResidual: number;
-  mae: number;
-  standardDeviation: number;
-  overPrediction: number;
-  underPrediction: number;
-  overPredictionPercent: number;
-  underPredictionPercent: number;
-};
 
 type ResidualPlotProps = {
   residualData: ResidualResponse | null;

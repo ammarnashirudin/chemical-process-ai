@@ -106,3 +106,14 @@ export type PressureAnalysisRow = {
   mae: number | null;
   rmse: number | null;
 };
+
+export type ResidualStats = {
+  count: number;
+  meanResidual: number;
+  mae: number;
+  standardDeviation: number;
+  overPrediction: number;
+  underPrediction: number;
+  overPredictionPercent: number;
+  underPredictionPercent: number;
+};
