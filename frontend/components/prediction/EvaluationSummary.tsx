@@ -67,7 +67,7 @@ export function EvaluationSummary({
             />
           </div>
 
-          <div className="mt-5 rounded-xl border border-slate-700bg-slate-950 p-4">
+          <div className="mt-5 rounded-xl border border-slate-700 bg-slate-950 p-4">
             <p className="text-sm font-semibold text-slate-200">
               Evaluation note
             </p>
