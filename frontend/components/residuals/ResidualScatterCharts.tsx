@@ -1,4 +1,4 @@
-﻿import { ResidualScatterChart } from "./ResidualScatterChart";
+import { ResidualScatterChart } from "./ResidualScatterChart";
 import type { ResidualPoint } from "../../types/dashboard";
 
 type ResidualScatterChartsProps = {
@@ -14,7 +14,7 @@ export function ResidualScatterCharts({
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <ResidualScatterChart
         title="Residual vs Predicted Z"
-        description="Relationship between predicted compressibilityfactor and residuals"
+        description="Relationship between predicted compressibility factor and residuals"
         xDataKey="z_predicted"
         xName="Predicted Z"
         xLabel="Predicted Z"
@@ -24,7 +24,7 @@ export function ResidualScatterCharts({
 
       <ResidualScatterChart
         title="Residual vs Temperature"
-        description="Relationship between operating temperature andprediction residuals"
+        description="Relationship between operating temperature and prediction residuals"
         xDataKey="temperature_K"
         xName="Temperature"
         xLabel="Temperature (K)"
