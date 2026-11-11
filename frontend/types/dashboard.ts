@@ -1,4 +1,4 @@
-﻿export type PredictionResult = {
+export type PredictionResult = {
   predicted_Z: number;
   model: string;
   within_training_range: boolean;
@@ -100,6 +100,15 @@ export type TemperatureAnalysisRow = {
 };
 
 export type PressureAnalysisRow = {
+  pressureRange: string;
+  count: number;
+  meanResidual: number | null;
+  mae: number | null;
+  rmse: number | null;
+};
+
+export type TemperaturePressureMatrixCell = {
+  temperatureRange: string;
   pressureRange: string;
   count: number;
   meanResidual: number | null;

@@ -1,22 +1,15 @@
-﻿type RangeDefinition = {
+import type { TemperaturePressureMatrixCell } from "../../types/dashboard";
+
+type RangeDefinition = {
   label: string;
   min: number;
   max: number;
 };
 
-type HeatmapCell = {
-  temperatureRange: string;
-  pressureRange: string;
-  count: number;
-  meanResidual: number | null;
-  mae: number | null;
-  rmse: number | null;
-};
-
 type ResidualErrorHeatmapProps = {
   temperatureRanges: RangeDefinition[];
   pressureRanges: RangeDefinition[];
-  temperaturePressureMatrix: HeatmapCell[];
+  temperaturePressureMatrix: TemperaturePressureMatrixCell[];
   maxMatrixRmse: number;
 };
 
