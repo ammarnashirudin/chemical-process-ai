@@ -1,4 +1,9 @@
-﻿import type { ResidualPoint } from "../../types/dashboard";
+import type {
+  ResidualPoint,
+  TemperatureAnalysisRow,
+  PressureAnalysisRow,
+  TemperaturePressureMatrixCell,
+} from "../../types/dashboard";
 
 export const temperatureRanges = [
   { label: "220-260 K", min: 220, max: 260 },
@@ -14,111 +19,70 @@ export const pressureRanges = [
   { label: "6-8 MPa", min: 6, max: 8 },
 ];
 
-function calculateMetrics(samples: ResidualPoint[]) {
-  const count = samples.length;
+const MIN_CELL_SAMPLES = 5;
+const MAX_WORST_CONDITIONS = 5;
+const MAX_WORST_PREDICTIONS = 10;
+const PRESSURE_PA_PER_MPA = 1_000_000;
+
+type OperatingConditionSample = {
+  count: number;
+  residualSum: number;
+  absoluteErrorSum: number;
+  squaredResidualSum: number;
+};
+
+function createEmptyGroup(): OperatingConditionSample {
+  return {
+    count: 0,
+    residualSum: 0,
+    absoluteErrorSum: 0,
+    squaredResidualSum: 0,
+  };
+}
+
+function addSample(
+  group: OperatingConditionSample,
+  point: ResidualPoint
+) {
+  group.count += 1;
+  group.residualSum += point.residual;
+  group.absoluteErrorSum += point.absolute_error;
+  group.squaredResidualSum += point.residual ** 2;
+}
+
+function calculateMetrics(group: OperatingConditionSample) {
+  const { count } = group;
 
   return {
     count,
     meanResidual:
-      count > 0
-        ? samples.reduce((sum, point) => sum + point.residual, 0) /
-          count
-        : null,
+      count > 0 ? group.residualSum / count : null,
     mae:
-      count > 0
-        ? samples.reduce(
-            (sum, point) => sum + point.absolute_error,
-            0
-          ) / count
-        : null,
+      count > 0 ? group.absoluteErrorSum / count : null,
     rmse:
       count > 0
-        ? Math.sqrt(
-            samples.reduce(
-              (sum, point) => sum + point.residual ** 2,
-              0
-            ) / count
-          )
+        ? Math.sqrt(group.squaredResidualSum / count)
         : null,
   };
 }
 
-function matchesTemperature(
-  point: ResidualPoint,
-  range: (typeof temperatureRanges)[number]
-) {
-  return (
-    point.temperature_K >= range.min &&
-    (range.max === 400
-      ? point.temperature_K <= range.max
-      : point.temperature_K < range.max)
+function findRangeIndex(
+  value: number,
+  ranges: typeof temperatureRanges | typeof pressureRanges
+): number {
+  return ranges.findIndex(
+    (range, index) =>
+      value >= range.min &&
+      (index === ranges.length - 1
+        ? value <= range.max
+        : value < range.max)
   );
 }
 
-function matchesPressure(
-  point: ResidualPoint,
-  range: (typeof pressureRanges)[number]
+function createWorstOperatingConditions(
+  matrix: TemperaturePressureMatrixCell[]
 ) {
-  const pressureMPa = point.pressure_Pa / 1_000_000;
-
-  return (
-    pressureMPa >= range.min &&
-    (range.max === 8
-      ? pressureMPa <= range.max
-      : pressureMPa < range.max)
-  );
-}
-
-export function analyzeOperatingConditions(
-  filteredResiduals: ResidualPoint[]
-) {
-  const temperatureAnalysis = temperatureRanges.map((range) => {
-    const samples = filteredResiduals.filter((point) =>
-      matchesTemperature(point, range)
-    );
-
-    return {
-      temperatureRange: range.label,
-      ...calculateMetrics(samples),
-    };
-  });
-
-  const pressureAnalysis = pressureRanges.map((range) => {
-    const samples = filteredResiduals.filter((point) =>
-      matchesPressure(point, range)
-    );
-
-    return {
-      pressureRange: range.label,
-      ...calculateMetrics(samples),
-    };
-  });
-
-  const temperaturePressureMatrix = temperatureRanges.flatMap(
-    (temperatureRange) =>
-      pressureRanges.map((pressureRange) => {
-        const samples = filteredResiduals.filter(
-          (point) =>
-            matchesTemperature(point, temperatureRange) &&
-            matchesPressure(point, pressureRange)
-        );
-
-        return {
-          temperatureRange: temperatureRange.label,
-          pressureRange: pressureRange.label,
-          ...calculateMetrics(samples),
-        };
-      })
-  );
-
-  const maxMatrixRmse = Math.max(
-    0,
-    ...temperaturePressureMatrix.map((item) => item.rmse ?? 0)
-  );
-
-  const MIN_CELL_SAMPLES = 5;
-
-  const worstOperatingConditions = temperaturePressureMatrix
+  return matrix
     .filter(
       (item) =>
         item.count >= MIN_CELL_SAMPLES &&
@@ -127,15 +91,15 @@ export function analyzeOperatingConditions(
         item.meanResidual !== null
     )
     .sort((a, b) => (b.rmse ?? 0) - (a.rmse ?? 0))
-    .slice(0, 5)
+    .slice(0, MAX_WORST_CONDITIONS)
     .map((item, index) => ({
       rank: index + 1,
       temperatureRange: item.temperatureRange,
       pressureRange: item.pressureRange,
       count: item.count,
-      meanResidual: item.meanResidual,
-      mae: item.mae,
-      rmse: item.rmse,
+      meanResidual: item.meanResidual!,
+      mae: item.mae!,
+      rmse: item.rmse!,
       errorDirection:
         item.meanResidual! < 0
           ? "Overprediction"
@@ -143,6 +107,80 @@ export function analyzeOperatingConditions(
             ? "Underprediction"
             : "Balanced",
     }));
+}
+
+export function analyzeOperatingConditions(
+  filteredResiduals: ResidualPoint[]
+) {
+  const temperatureGroups = temperatureRanges.map(() =>
+    createEmptyGroup()
+  );
+
+  const pressureGroups = pressureRanges.map(() =>
+    createEmptyGroup()
+  );
+
+  const matrixGroups = temperatureRanges.map(() =>
+    pressureRanges.map(() => createEmptyGroup())
+  );
+
+  for (const point of filteredResiduals) {
+    const temperatureIndex = findRangeIndex(
+      point.temperature_K,
+      temperatureRanges
+    );
+
+    const pressureIndex = findRangeIndex(
+      point.pressure_Pa / PRESSURE_PA_PER_MPA,
+      pressureRanges
+    );
+
+    if (temperatureIndex !== -1) {
+      addSample(temperatureGroups[temperatureIndex], point);
+    }
+
+    if (pressureIndex !== -1) {
+      addSample(pressureGroups[pressureIndex], point);
+    }
+
+    if (temperatureIndex !== -1 && pressureIndex !== -1) {
+      addSample(
+        matrixGroups[temperatureIndex][pressureIndex],
+        point
+      );
+    }
+  }
+
+  const temperatureAnalysis: TemperatureAnalysisRow[] =
+    temperatureRanges.map((range, index) => ({
+      temperatureRange: range.label,
+      ...calculateMetrics(temperatureGroups[index]),
+    }));
+
+  const pressureAnalysis: PressureAnalysisRow[] =
+    pressureRanges.map((range, index) => ({
+      pressureRange: range.label,
+      ...calculateMetrics(pressureGroups[index]),
+    }));
+
+  const temperaturePressureMatrix: TemperaturePressureMatrixCell[] =
+    temperatureRanges.flatMap((temperatureRange, temperatureIndex) =>
+      pressureRanges.map((pressureRange, pressureIndex) => ({
+        temperatureRange: temperatureRange.label,
+        pressureRange: pressureRange.label,
+        ...calculateMetrics(
+          matrixGroups[temperatureIndex][pressureIndex]
+        ),
+      }))
+    );
+
+  const maxMatrixRmse = Math.max(
+    0,
+    ...temperaturePressureMatrix.map((item) => item.rmse ?? 0)
+  );
+
+  const worstOperatingConditions =
+    createWorstOperatingConditions(temperaturePressureMatrix);
 
   return {
     temperatureAnalysis,
@@ -159,32 +197,55 @@ export function getWorstConditionPredictions(
     typeof analyzeOperatingConditions
   >["worstOperatingConditions"]
 ) {
-  return worstOperatingConditions
-    .flatMap((condition) => {
-      const temperatureRange = temperatureRanges.find(
-        (range) => range.label === condition.temperatureRange
-      );
+  const conditionIndexByKey = new Map(
+    worstOperatingConditions.map((condition, index) => [
+      `${condition.temperatureRange}|${condition.pressureRange}`,
+      index,
+    ])
+  );
 
-      const pressureRange = pressureRanges.find(
-        (range) => range.label === condition.pressureRange
-      );
+  const predictionsByCondition = worstOperatingConditions.map(
+    () => [] as (ResidualPoint & {
+      temperatureRange: string;
+      pressureRange: string;
+    })[]
+  );
 
-      if (!temperatureRange || !pressureRange) {
-        return [];
-      }
+  for (const point of filteredResiduals) {
+    const temperatureIndex = findRangeIndex(
+      point.temperature_K,
+      temperatureRanges
+    );
 
-      const samples = filteredResiduals.filter(
-        (point) =>
-          matchesTemperature(point, temperatureRange) &&
-          matchesPressure(point, pressureRange)
-      );
+    const pressureIndex = findRangeIndex(
+      point.pressure_Pa / PRESSURE_PA_PER_MPA,
+      pressureRanges
+    );
 
-      return samples.map((point) => ({
-        ...point,
-        temperatureRange: condition.temperatureRange,
-        pressureRange: condition.pressureRange,
-      }));
-    })
+    if (temperatureIndex === -1 || pressureIndex === -1) {
+      continue;
+    }
+
+    const temperatureRange = temperatureRanges[temperatureIndex].label;
+    const pressureRange = pressureRanges[pressureIndex].label;
+
+    const conditionIndex = conditionIndexByKey.get(
+      `${temperatureRange}|${pressureRange}`
+    );
+
+    if (conditionIndex === undefined) {
+      continue;
+    }
+
+    predictionsByCondition[conditionIndex].push({
+      ...point,
+      temperatureRange,
+      pressureRange,
+    });
+  }
+
+  return predictionsByCondition
+    .flat()
     .sort((a, b) => b.absolute_error - a.absolute_error)
-    .slice(0, 10);
+    .slice(0, MAX_WORST_PREDICTIONS);
 }
