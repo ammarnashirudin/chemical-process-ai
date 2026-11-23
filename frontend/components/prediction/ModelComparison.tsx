@@ -1,4 +1,4 @@
-﻿import {
+import {
   BarChart,
   Bar,
   XAxis,
@@ -131,7 +131,7 @@ export function ModelComparison({
 
           <div className="lg:col-span-2">
             <MetricBarChart
-              title="R2 Comparison"
+              title="R² Comparison"
               metric="r2"
               data={modelComparisonData}
               yAxisDomain={[0, 1]}

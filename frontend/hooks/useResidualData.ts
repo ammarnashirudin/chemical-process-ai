@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { fetchResiduals } from "../lib/api";
 import type { ResidualResponse } from "../types/dashboard";
 
@@ -11,19 +11,28 @@ export function useResidualData(
   const [residualError, setResidualError] = useState("");
 
   async function loadResiduals() {
-    setResidualLoading(true);
     setResidualError("");
+    setResidualData(null);
+    setResidualLoading(true);
 
     try {
       const data = await fetchResiduals();
+
       setResidualData(data);
       setApiOnline(true);
     } catch (err) {
-      setResidualError(
-        err instanceof Error
-          ? err.message
-          : "Gagal memuat data residual."
-      );
+      if (err instanceof TypeError) {
+        setApiOnline(false);
+        setResidualError(
+          "Tidak dapat terhubung ke API. Pastikan FastAPI berjalan di port 8000."
+        );
+      } else {
+        setResidualError(
+          err instanceof Error
+            ? err.message
+            : "Gagal memuat data residual."
+        );
+      }
     } finally {
       setResidualLoading(false);
     }

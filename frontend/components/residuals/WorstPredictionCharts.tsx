@@ -1,4 +1,4 @@
-﻿import { MetricCard } from "../common/MetricCard";
+import { MetricCard } from "../common/MetricCard";
 import { ResidualScatterChart } from "./ResidualScatterChart";
 import type { ResidualPoint } from "../../types/dashboard";
 

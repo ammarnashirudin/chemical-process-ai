@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import {
   fetchPrediction,
   fetchComparison,
@@ -17,15 +17,29 @@ export function usePrediction(setApiOnline: (online: boolean) => void) {
   const [error, setError] = useState("");
 
   async function predict() {
-    setLoading(true);
     setError("");
     setResult(null);
     setComparison(null);
 
+    const temperatureValue = Number(temperature);
+    const pressureValue = Number(pressure);
+
+    if (
+      !Number.isFinite(temperatureValue) ||
+      !Number.isFinite(pressureValue) ||
+      temperatureValue <= 0 ||
+      pressureValue <= 0
+    ) {
+      setError("Temperatur dan tekanan harus berupa angka positif yang valid.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const payload = {
-        temperature_K: Number(temperature),
-        pressure_Pa: Number(pressure),
+        temperature_K: temperatureValue,
+        pressure_Pa: pressureValue,
       };
 
       const [predictionData, comparisonData] = await Promise.all([
@@ -37,12 +51,18 @@ export function usePrediction(setApiOnline: (online: boolean) => void) {
       setComparison(comparisonData);
       setApiOnline(true);
     } catch (err) {
-      setApiOnline(false);
-      setError(
-        err instanceof Error
-          ? `${err.message}. Pastikan FastAPI berjalan di port 8000.`
-          : "Terjadi kesalahan saat menghubungi API."
-      );
+      if (err instanceof TypeError) {
+        setApiOnline(false);
+        setError(
+          "Tidak dapat terhubung ke API. Pastikan FastAPI berjalan di port 8000."
+        );
+      } else {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Terjadi kesalahan saat memproses prediksi."
+        );
+      }
     } finally {
       setLoading(false);
     }

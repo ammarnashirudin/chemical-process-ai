@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { PressureCurveResult } from "../../types/dashboard";
 import {
@@ -95,7 +95,7 @@ export function PressureCurveChart({
                   }
                   formatter={(value, name) => [
                     Number(value).toFixed(6),
-                    name === "ml_Z" ? "Random Forest Tuned" : "PR-EOS",
+                    String(name),
                   ]}
                 />
                 <Legend />

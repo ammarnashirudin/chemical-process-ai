@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { fetchPressureCurve } from "../lib/api";
 import type { PressureCurveResult } from "../types/dashboard";
 
@@ -11,12 +11,24 @@ export function usePressureCurve(
   const [curveError, setCurveError] = useState("");
 
   async function loadPressureCurve() {
-    setCurveLoading(true);
     setCurveError("");
+    setCurve(null);
+
+    const temperatureValue = Number(temperature);
+
+    if (
+      !Number.isFinite(temperatureValue) ||
+      temperatureValue <= 0
+    ) {
+      setCurveError("Temperatur harus berupa angka positif yang valid.");
+      return;
+    }
+
+    setCurveLoading(true);
 
     try {
       const data = await fetchPressureCurve({
-        temperature_K: Number(temperature),
+        temperature_K: temperatureValue,
         pressure_min_Pa: 100000,
         pressure_max_Pa: 8000000,
         points: 50,
@@ -25,11 +37,19 @@ export function usePressureCurve(
       setCurve(data);
       setApiOnline(true);
     } catch (err) {
-      setCurveError(
-        err instanceof Error
-          ? err.message
-          : "Gagal memuat kurva tekanan."
-      );
+      if (err instanceof TypeError) {
+        setApiOnline(false);
+        setCurveError(
+          "Tidak dapat terhubung ke API. Pastikan FastAPI berjalan di port 8000."
+        );
+      } else {
+        setApiOnline(true);
+        setCurveError(
+          err instanceof Error
+            ? err.message
+            : "Gagal memuat kurva tekanan."
+        );
+      }
     } finally {
       setCurveLoading(false);
     }

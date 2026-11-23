@@ -85,7 +85,7 @@ export function WorstOperatingConditions({
                     colSpan={8}
                     className="px-3 py-6 text-center text-slate-400"
                   >
-                    No operating conditions meet the minimumsample requirement.
+                    No operating conditions meet the minimum sample requirement.
                   </td>
                 </tr>
               )}

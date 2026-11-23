@@ -64,9 +64,10 @@ export function ResidualErrorHeatmap({
                     );
 
                     const intensity =
-                      cell?.rmse !== null && cell?.rmse !== undefined &&
+                      cell?.rmse !== null &&
+                      cell?.rmse !== undefined &&
                       maxMatrixRmse > 0
-                        ? cell.rmse / maxMatrixRmse
+                        ? Math.min(1, Math.max(0, cell.rmse / maxMatrixRmse))
                         : 0;
 
                     const backgroundColor =
