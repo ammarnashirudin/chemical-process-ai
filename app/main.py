@@ -134,10 +134,11 @@ def get_residuals():
         raise HTTPException(
             status_code=404,
             detail=(
-                "Residual data not found"
+                "Residual data not found. "
                 "Run python -m src.model.analyze_residuals first."
             ),
         )
+
     residual_df = pd.read_csv(RESIDUAL_DATA_PATH)
 
     required_columns = [
@@ -158,7 +159,7 @@ def get_residuals():
     if missing_columns:
         raise HTTPException(
             status_code=500,
-            details=f"Missing residual columns: {missing_columns}",
+            detail=f"Missing residual columns: {missing_columns}",
         )
 
     residual_values = residual_df["residual"].dropna().to_numpy()
@@ -191,8 +192,8 @@ def get_residuals():
 
     qq_lot = [
         {
-            "theoretical_quantile" : float(theoretical),
-            "sample_quantile" : float(sample),
+            "theoretical_quantile": float(theoretical),
+            "sample_quantile": float(sample),
         }
 
         for theoretical, sample in zip(
@@ -201,16 +202,17 @@ def get_residuals():
         )
     ]
 
-    return{
+    return {
         "count": len(residual_df),
         "residuals": residual_df[required_columns].to_dict(
             orient="records"
         ),
-        "qq_plot" : qq_lot,
-        "definition" : (
+        "qq_plot": qq_lot,
+        "definition": (
             "Residual = actual PR-EOS Z minus predicted ML Z."
-        )
+        ),
     }
+
 
 @app.post("/predict", response_model=PredictionOutput)
 def predict(data: PredictionInput):

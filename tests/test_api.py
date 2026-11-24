@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
+import app.main as main_module
 from app.main import app
 
 client = TestClient(app)
@@ -104,3 +105,43 @@ def test_compare_pr_eos_and_ml():
     assert result["absolute_error"] == pytest.approx(
         expected_error
     )
+
+
+def test_residuals_rejects_missing_columns(
+    tmp_path,
+    monkeypatch,
+):
+    residual_file = tmp_path / "invalid_residuals.csv"
+    residual_file.write_text(
+        "residual\n0.01\n0.02\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        main_module,
+        "RESIDUAL_DATA_PATH",
+        residual_file,
+    )
+
+    response = client.post("/residuals")
+
+    assert response.status_code == 500
+    assert "Missing residual columns" in response.json()["detail"]
+
+
+def test_residuals_returns_404_when_file_not_found(
+    tmp_path,
+    monkeypatch,
+):
+    missing_file = tmp_path / "missing_residuals.csv"
+
+    monkeypatch.setattr(
+        main_module,
+        "RESIDUAL_DATA_PATH",
+        missing_file,
+    )
+
+    response = client.post("/residuals")
+
+    assert response.status_code == 404
+    assert "Residual data not found" in response.json()["detail"]
